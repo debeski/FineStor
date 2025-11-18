@@ -1,0 +1,29 @@
+<div class="d-flex gap-2 align-items-center justify-content-end no-print">
+    <div class="dropdown-center">
+        <a href="#" class="action-icon" id="actionDropdown{{ record.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-three-dots-vertical text-dark"></i>
+        </a>
+        <ul class="dropdown-menu" aria-labelledby="actionDropdown{{ record.id }}">
+            {% comment %} <li>
+                <a class="dropdown-item" href="#" title="عرض">
+                    <i class="bi bi-person-lines-fill text-dark me-1 h5"> </i> عرض
+                </a>
+            </li> {% endcomment %}
+            <li>
+                <a class="dropdown-item" href="{% url 'edit_user' record.id %}" title="تعديل">
+                    <i class="bi bi-person-dash-fill text-dark me-1 h5"> </i> تعديل
+                </a>
+            </li>
+            {% if user.is_superuser %}
+                {% if not record.is_staff %}
+            <li>
+                <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#deleteModal"
+                data-user-id="{{ record.id }}" data-user-name="{{ record.username }}">
+                <i class="bi bi-x-octagon text-danger me-1 h5"> </i> حذف
+                </a>
+            </li>
+                {% endif %}
+            {% endif %}
+        </ul>
+    </div>
+</div>

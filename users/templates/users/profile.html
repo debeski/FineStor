@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load django_tables2 %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}الملف الشخصي{% endblock %}
+
+{% block content %}
+
+    <div class="card">
+        <div class="card-header display-5">
+            <h1><strong>الــملف الشخصــي</strong></h1>
+        </div>
+        <div class="card-body row">
+            <div class="mt-4 col-md-9 h2">
+                <p><strong>اسم الـمستخدم:</strong> {{ user.username }}</p>
+                <p><strong>البريد الالكتروني:</strong> {{ user.email }}</p>
+                <p><strong>الاســــــــــــــــــم:</strong> {{ user.full_name }}</p>
+                <p><strong>رقـــــم الـــهاتف:</strong> {{ user.phone }}</p>
+                <p><strong>جهـــــة الـــعمل:</strong> {{ user.occupation }}</p>
+            </div>
+            <div class="col-md-3 mt-4 d-block mx-auto">
+                <img src="{% static 'img/default_profile.webp' %}" alt="Profile Image" class="img-thumbnail" width="250">
+            </div>
+        </div>
+    </div>
+    <div class="row mt-4">
+        <form method="post">
+            {% csrf_token %}
+            <a class="btn btn-success" href="{% url 'edit_profile' %}" role="button" title="تحديث البيانات">
+                <i class="bi bi-pencil-square text-light me-1 h4"></i> تحديث البيانات
+            </a>
+            
+            <a class="btn btn-danger" href="#" role="button" data-bs-toggle="modal" data-bs-target="#resetPasswordModal" title="تغيير كلمة المرور">
+                <i class="bi bi-lock text-light me-1 h4"></i> تغيير كلمة المرور
+            </a>
+            
+            <a href="{% url 'index' %}" class="btn btn-dark" title="الرئيسية">
+                <i class="bi bi-house-door text-light me-1 h4"></i> الرئيسية
+            </a>
+        </form>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-labelledby="resetPasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="resetPasswordModalLabel">تغيير كلمة المرور</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ password_form|crispy }}
+                        <button type="submit" name="change_password" class="btn btn-success">تـغـيــيــر</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

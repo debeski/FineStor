@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load django_tables2 %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+
+    <div class="card mb-3">
+        <div class="card-header">
+            <h4>تفاصيل اذن الاستلام رقم <strong>{{ record.trans_id }}</strong></h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 fs-5">
+                    <p>اسم الشركة: <strong>{{ record.company }}</strong></p>
+                    <p>رقم الهاتف: <strong>{{ record.phone }}</strong></p>
+                    <p>العنوان: <strong>{{ record.address }}</strong></p>
+                </div>
+                <div class="col-md-6 fs-5">
+                    <p>تاريخ الاستلام: <strong>{{ record.date }}</strong></p>
+                    <p>رقم امر التكليف: <strong>{{ record.assign_id}}</strong></p>
+                    <p>تاريخ امر التكليف: <strong>{{ record.assign_date }}</strong></p>
+                </div>
+            </div>
+        <!-- Add other relevant fields from the record -->
+            <table class="table table-bordered mt-2 p-3">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>الصنف</th>
+                        <th>العلامة</th>
+                        <th>الكمية</th>
+                        <th>الوحدة</th>
+                        <th>السعر (لكل وحدة)</th>
+                        <th class="p-2">الاجمالي</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in record.items %}
+                        <tr>
+                            <td><strong>{{ forloop.counter }}</strong></td>
+                            <td>{{ item.name }}</td>
+                            <td>{{ item.brand }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>{{ item.unit }}</td>
+                            <td>{{ item.price }}</td>
+                            <td class="p-2">{{ item.total_price }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="table-light">
+                        <td colspan="6" class="text-end"><strong>الاجمالي: </strong></td>
+                        <td class="p-2"><strong>{{ grand_total }}</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+
+        <!-- Action Buttons Below the Table -->
+            <div class="text-end mt-4">
+                <!-- Cancel Button (Back to Records Page) -->
+                <button onclick="window.location.href = document.referrer || '/';" class="btn btn-secondary">رجوع</button>
+
+            <!-- Print Button (Trigger PDF Generation) -->
+                <a href="{% url 'gen_pdf' model='import' trans_id=record.trans_id %}" target="_blank" class="btn btn-primary ms-2">
+                    طباعة
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

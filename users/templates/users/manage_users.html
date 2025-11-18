@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load django_tables2 %}
+{% load crispy_forms_tags %}
+
+{% block title %}الاعدادت - إدارة المستخدمين{% endblock %}
+
+{% block content %}
+
+    <form method="get" class="mb-3">
+        {% crispy filter.form %}
+    </form>
+
+    <div class="card border-light shadow">
+        <div class="card-header text-center pe-5 text-bg-warning">
+            <h3 class="card-title">إدارة المستخدمين</h3>
+        </div>
+        <div class="card-body p-0 table-responsive-lg">
+            <!-- Render the table -->
+            {% render_table table %}
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a href="{% url 'create_user' %}" class="btn btn-success" title="إضافة مستخدم جديد">
+            <i class="bi bi-person-plus-fill text-light me-1 h4"></i> إضافة مستخدم جديد
+        </a>
+    </div>
+
+    <!-- Delete Modal -->
+    {% if request.user.is_superuser %}
+    <form id="deleteForm" method="post">
+        {% csrf_token %}
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel">تأكيد الحذف</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>هل انت متأكد انك تريد حذف العضو <strong><span id="userName"></span></strong>؟</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-danger">نعم، احذف</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+
+    <script nonce="{{ request.csp_nonce }}">
+        document.addEventListener("DOMContentLoaded", function () {
+            const deleteModal = document.getElementById("deleteModal");
+            deleteModal.addEventListener("show.bs.modal", function (event) {
+                let button = event.relatedTarget; // Button that triggered the modal
+                let userId = button.getAttribute("data-user-id");
+                let userName = button.getAttribute("data-user-name");
+                let form = document.getElementById("deleteForm");
+
+                // Update the modal content
+                document.getElementById("userName").textContent = userName;
+                form.action = `/manage/users/delete/${userId}/`; // Update form action with user ID
+            });
+        });
+    </script>
+
+{% endblock %}

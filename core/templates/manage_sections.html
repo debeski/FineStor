@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load django_tables2 %}
+{% load static %}
+
+{% block content %}
+
+    <div class="card mb-3">
+        <div class="card-header text-center">
+            <h4 class="me-5">
+                {% if form.instance.id %}
+                    تعديل بيانات {{ id }}
+                {% else %}
+                    اضافة {{ ar_name }} جديد
+                {% endif %}
+            </h4>
+        </div>
+        <div class="card-body">
+            {% if form %}
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    {% crispy form %}
+                </form>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if table %}
+    <div class="card">
+        <div class="card-header text-center">
+            <h4 class="me-5">قائمة {{ ar_names }}</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                {% render_table table %}
+            </div>
+        {% if model_name == 'sub_affiliate' %}
+            <div class="pt-3">
+                <a href="{% url 'manage_sections' model_name='affiliate' %}" class="btn btn-secondary">رجوع</a>
+            </div>
+        {% endif %}
+        </div>
+    {% else %}
+        <h3 class="mt-4">حدث خطأ ما!</h3>
+    {% endif %}
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+    <link rel="stylesheet" href="{% static 'flatpickr/flatpickr.min.css' %}">
+    <link rel="stylesheet" href="{% static 'flatpickr/monthSelect/style.css' %}">
+
+    <script src="{% static 'flatpickr/flatpickr.min.js' %}"></script>
+    <script src="{% static 'flatpickr/monthSelect/index.js' %}"></script>
+    <script src="{% static 'flatpickr/locale/ar.js' %}"></script>
+
+    {% if id_type %}
+    <script>
+        document.getElementById('id_type').addEventListener('change', function() {
+            var type = this.options[this.selectedIndex].text;  // Get the selected Arabic text
+            var nameField = document.getElementById('id_name');
+            nameField.value = type + ' ';  // Set the name field to the title followed by a space
+            nameField.focus();  // Move the focus to the name field
+            nameField.setSelectionRange(nameField.value.length, nameField.value.length);  // Place cursor at the end
+        });
+    </script>
+    {% endif %}
+
+    {% if id_subtype %}
+    <script>
+        document.getElementById('id_subtype').addEventListener('change', function() {
+            var type = this.options[this.selectedIndex].text;  // Get the selected Arabic text
+            var nameField = document.getElementById('id_subname');
+            nameField.value = type + ' ';  // Set the name field to the title followed by a space
+            nameField.focus();  // Move the focus to the name field
+            nameField.setSelectionRange(nameField.value.length, nameField.value.length);  // Place cursor at the end
+        });
+    </script>
+    {% endif %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Flatpickr on all elements with the class 'flatpickr'
+            flatpickr('#monthSelector', {
+                position: "auto center",
+                locale: "ar",
+                altInput: true, // Show the input field
+                altFormat: "Y F", //defaults to "F Y"
+                plugins: [
+                    new monthSelectPlugin({
+                    dateFormat: "Y-m-d", //defaults to "F Y"
+
+                    theme: "light" // defaults to "light"
+                    })
+                ],
+            });
+        });
+    </script>
+
+{% endblock %}

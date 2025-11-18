@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load django_tables2 %}
+{% load static %}
+
+{% block content %}
+
+    <!-- Main Card for Add/Edit Form and Categories Table -->
+    <div class="card mb-3">
+        <div class="card-header text-center">
+            <h4 class="me-5">{% if editing %}تعديل تصنيف{% else %}اضافة تصنيف جديد{% endif %}</h4>
+        </div>
+        <div class="card-body">
+            <!-- Add/Edit Form -->
+            <div class="row mt-3">
+                <form method="post" class="col-12">
+                    {% csrf_token %}
+                    {% crispy form %}
+                </form>
+            </div>
+        </div>
+    </div>
+
+        <!-- Categories Table -->
+    <div class="card">
+        <div class="card-header text-center">
+            <h4 class="me-5">قائمة التصنيفات</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+            {% render_table table %}
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

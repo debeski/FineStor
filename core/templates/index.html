@@ -1,0 +1,466 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+    <script src="{% static 'js/plotly-basic.min.js' %}" defer></script>
+    <script src="{% static 'js/plotly-locale-ar.js' %}" defer></script>
+{% endblock %}
+
+{% block content %}
+    <!-- First Row: Title and Description -->
+    <div class="row text-center mb-1">
+        <div class="row">
+            <p class="display-4 vanishor">المنظومة الالكترونية للعلامات التجارية</p>
+            <p class="display-6">(نسخـة تجريبيــة)</p>
+        </div>
+    </div>
+
+    <!-- Second Row: Three Feature Cards -->
+    <div class="row p-4 justify-content-between g-4">
+
+        <div class="col-lg-2 flex-fill">
+            <div class="card icard shadow-sm h-100">
+                <div class="card-body d-flex flex-column">
+                    <a href="{% url 'decree_list' %}" class="stretched-link"></a>
+                    <h4 class="card-title text-center"><strong>قـرارات العلامات التجارية</strong></h4>
+                    <p class="text-muted vanishor">البحث في قرارات العلامات التجارية المؤرشفة في المنظومة.</p>
+                    <i class="bi bi-file-earmark-binary mt-auto text-success h3 vanishor"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-2 flex-fill">
+            <div class="card icard shadow-sm h-100">
+                <div class="card-body d-flex flex-column">
+                    <a href="{% url 'publication_list' %}" class="stretched-link"></a>
+                    <h4 class="card-title text-center"><strong>اشهـارات العلامات التجارية</strong></h4>
+                    <p class="text-muted vanishor">البحث في العلامات التجارية المشهرة الكترونيا.</p>
+                    <i class="bi bi-file-earmark-check mt-auto text-primary h3 vanishor"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-2 flex-fill">
+            <div class="card icard shadow-sm h-100">
+                <div class="card-body d-flex flex-column">
+                    <a href="{% url 'formplus_list' %}" class="stretched-link"></a>
+                    <h4 class="card-title text-center"><strong>التشريعـات والـنماذج</strong></h4>
+                    <p class="text-muted vanishor">البحث في النماذج و التشريعات الليبية المنظمة للعلامات التجارية.</p>
+                    <i class="bi bi-file-earmark-richtext mt-auto text-dark h3 vanishor"></i>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Third Row: Three Feature Cards -->
+    <div class="row p-4 justify-content-between g-4">
+
+        <div class="col-lg-2 flex-fill">
+            <div class="card icard shadow-sm h-100">
+                <div class="card-body d-flex flex-column">
+                    <a href="{% url 'grievance_pub_pick' %}" class="stretched-link"></a>
+                    <h4 class="card-title text-center"><strong>تقديـم تظلم على قـرار</strong></h4>
+                    <p class="text-muted vanishor">البدء في اجراءات تقديم تظلم على قرار رفض تسجيل علامة تجارية.</p>
+                    <i class="bi bi-slash-circle mt-auto text-danger h3 vanishor"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-2 flex-fill">
+            <div class="card icard shadow-sm h-100">
+                <div class="card-body d-flex flex-column">
+                    <a href="{% url 'objection_pub_pick' %}" class="stretched-link"></a>
+                    <h4 class="card-title text-center"><strong>تقديـم معارضة على اشهـار</strong></h4>
+                    <p class="text-muted vanishor">البدء في اجراءات تقديم معارضة على علامة تجارية مشهرة.</p>
+                    <i class="bi bi-slash-circle mt-auto text-warning h3 vanishor"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-2 flex-fill">
+            <div class="card icard shadow-sm h-100" role="button" data-bs-toggle="modal" data-bs-target="#statusModal">
+                <div class="card-body d-flex flex-column">
+                    <h4 class="card-title text-center"><strong>تتبـع حالة معارضة او تظلم</strong></h4>
+                    <p class="text-muted vanishor">الاستفسار عن حالة تظلم او معارضة تم تقديمها مسبقا بإستخدام رقمها المميز.</p>
+                    <i class="bi bi-search mt-auto text-dark h3 vanishor"></i>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Fourth Row: Stats & Charts -->
+    <div class="row p-4 align-items-center g-3">
+        <div class="col-lg-3 flex-shrink-1 g-3">
+            <div class="card shadow-sm p-3 mb-2">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-graph-up display-3 text-success me-3"></i> <!-- Bootstrap Icon -->
+                    <div>
+                        <h5>قرارات العلامات <strong><span class="text-dark card_text_big ps-2">{{ decree_total }}</span></strong></h5>
+                        <h5>قرارات قبول <strong><span class="text-success card_text_big ps-2">{{ decree_accept }}</span></strong></h5>
+                        <h5>قرارات رفض <strong><span class="text-danger card_text_big ps-2">{{ decree_reject }}</span></strong></h5>
+                    </div>
+                </div>
+            </div>
+            <div class="card shadow-sm p-3 mb-2">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-diagram-3 display-3 text-primary me-3"></i>
+                    <div>
+                        <h5>اشهارات العلامات <strong><span class="text-dark card_text_big ps-2">{{ pub_total }}</span></strong></h5>
+                        {% comment %} <h5>اشهارات مبدئية <strong><span class="ps-2 text-info card_text_big">{{ pub_initial }}</span></strong></h5> {% endcomment %}
+                        <h5>علامات مسجلة <strong><span class="text-primary card_text_big ps-2">{{ pub_final }}</span></strong></h5>
+                    </div>
+                </div>
+            </div>
+            <div class="card shadow-sm p-3">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-exclamation-triangle display-6 text-warning ms-3 me-4"></i>
+                    <div>
+                        {% comment %} <h5>اعتراضات مقدمة <strong><span class="ps-2 text-danger card_text_big">{{ obj_pending }}</span></strong></h5>
+                        <h5>اعتراضات مقبولة <strong><span class="text-primary card_text_big ps-2">{{ obj_accept }}</span></strong></h5>
+                        <h5>اعتراضات تتطلب اجراء <strong><span class="text-warning card_text_big ps-2">{{ obj_paid }}</span></strong></h5> {% endcomment %}
+                        <h5>اعتراضات مقدمة <strong><span class="ps-2 text-dark card_text_big">{{ obj_total }}</span></strong></h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-9 flex-fill" id="chartContainer">
+            <div class="card shadow-sm p-3 d-flex">
+                <div id="chartDiv">
+                    {% comment %} {% autoescape off %}{{ chart_html }}{% endautoescape %} {% endcomment %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row text-center">
+        <div class="col">
+            {% if not user.is_authenticated %}
+            <h3>للاستفسار او المساعدة يمكنك التواصل معنا عبر  <a target="_blank" href="https://www.facebook.com/TdmLY2024/">صفحة الفيسبوك</a> <i class="bi bi-facebook"></i> </h3>
+            {% endif %}
+            <br>
+            <p class="lead"><small>جميع الحقوق محفوظة لوزارة الاقتصاد والتجارة © 2025 - الاصدار {{ version }}<small></p>
+        </div>
+    </div>
+
+    {% if request.session.show_submission_modal %}
+        {% if messages %}
+            {% for message in messages %}
+                    <div class="modal fade" id="submissionModal"  data-bs-backdrop="static"  tabindex="-1" role="dialog" aria-labelledby="submissionModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-xl modal-dialog-centered modal-fullscreen-lg-down" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title fs-3" id="submissionModalLabel">تمت تعبئة النموذج بنجاح و عليك الان دفع الرسم المقرر</h5>
+                                </div>
+                                <div class="modal-body fs-4">
+                                    <p>{{ message|safe }}</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">انا، أوافق</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            {% endfor %}
+        {% endif %}
+    {% endif %}
+
+    {% comment %} {% if request.session.show_submission_modal2 %}
+        {% if messages %}
+            {% for message in messages %}
+                    <div class="modal fade" id="submissionModal2"  data-bs-backdrop="static"  tabindex="-1" role="dialog" aria-labelledby="submissionModal2Label" aria-hidden="true">
+                        <div class="modal-dialog modal-xl modal-dialog-centered modal-fullscreen-lg-down" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title fs-3" id="submissionModal2Label">تمت تعبئة النموذج بنجاح و عليك الان دفع الرسم المقرر</h5>
+                                </div>
+                                <div class="modal-body fs-4">
+                                    <p>{{ message|safe }}</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">انا، أوافق</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            {% endfor %}
+        {% endif %}
+    {% endif %} {% endcomment %}
+
+    <!-- Status Check Modal -->
+    <div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="statusModalLabel">استعلام عن حالة معارضة أو تظلم</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                </div>
+                <div class="modal-body">
+
+                    <!-- Nav tabs -->
+                    <ul class="nav nav-tabs mb-3" id="statusTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="objection-tab"
+                                    data-status-url="{% url 'check_objection_status' %}" type="button" role="tab">
+                                معارضة
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="grievance-tab"
+                                    data-status-url="{% url 'check_grievance_status' %}" type="button" role="tab">
+                                تظلم
+                            </button>
+                        </li>
+                    </ul>
+
+                    <!-- Shared form -->
+                    <form id="statusCheckForm">
+                        <div class="mb-3">
+                            <label for="uniqueCode" class="form-label">الرقم المميز</label>
+                            <input type="text" class="form-control" id="uniqueCode" name="unique_code" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phoneNumber" class="form-label">رقم الهاتف</label>
+                            <input type="text" class="form-control" id="phoneNumber" name="phone_number" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">تحقق</button>
+                    </form>
+
+                    <!-- Response -->
+                    <div id="statusResult" class="fs-6 mt-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Install Modal -->
+    <div class="modal fade" id="installModal" tabindex="-1" aria-labelledby="installModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="installModalLabel">هل تريد تثبيـت هذا التطبيق؟</h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="h5">يمكنك تثبيت هذا الموقع كتطبيق للوصول إليه بسهولة من الشاشة الرئيسية.</p>
+                </div>
+                <div class="modal-footer row">
+                    <div class="col">
+                        <div class="form-check mt-3">
+                            <input class="form-check-input" type="checkbox" id="dontShowAgain">
+                            <label class="form-check-label" for="dontShowAgain">
+                                عدم الإظهار مجددا.
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col text-end">
+                        <button class="btn btn-primary" id="confirm-install">تثبيت</button>
+                        <button class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+
+    <script nonce="{{ request.csp_nonce }}">
+        window.onload = function () {
+            var chartDiv = document.getElementById("chartDiv");
+            if (!chartDiv) {
+                console.error("chartDiv not found!");
+                return;
+            }
+        
+            try {
+                var chartJSON = JSON.parse('{{ chart_json|safe }}');
+        
+                if (!chartJSON.data || chartJSON.data.length === 0) {
+                    console.error("Chart data is empty!", chartJSON);
+                    return;
+                }
+        
+                // Enable autosize in layout
+                chartJSON.layout.autosize = true;
+        
+                // Initial render
+                Plotly.newPlot(chartDiv, chartJSON.data, chartJSON.layout, { locale: "ar" });
+        
+                // Handle window resize
+                window.addEventListener('resize', function () {
+                    Plotly.relayout(chartDiv, { width: chartDiv.clientWidth });
+                });
+        
+            } catch (error) {
+                console.error("Error parsing chart JSON:", error);
+            }
+        };
+    </script>
+
+    {% if request.session.show_submission_modal %}
+        <script nonce="{{ request.csp_nonce }}">
+            document.addEventListener("DOMContentLoaded", function() {
+                var submissionModal = new bootstrap.Modal(document.getElementById('submissionModal'));
+                submissionModal.show();
+            });
+        </script>
+
+        {# Clear the session flag so it doesn't keep showing #}
+        <script nonce="{{ request.csp_nonce }}">
+            fetch("{% url 'clear_modal_session' %}", { method: "POST", credentials: "same-origin", headers: {"X-CSRFToken": "{{ csrf_token }}" } });
+        </script>
+    {% endif %}
+
+    {% comment %} {% if request.session.show_submission_modal2 %}
+        <script nonce="{{ request.csp_nonce }}">
+            document.addEventListener("DOMContentLoaded", function() {
+                var submissionModal = new bootstrap.Modal(document.getElementById('submissionModal2'));
+                submissionModal.show();
+            });
+        </script>
+
+        {# Clear the session flag so it doesn't keep showing #}
+        <script nonce="{{ request.csp_nonce }}">
+            fetch("{% url 'clear_modal_session' %}", { method: "POST", credentials: "same-origin", headers: {"X-CSRFToken": "{{ csrf_token }}" } });
+        </script>
+    {% endif %} {% endcomment %}
+
+    <script nonce="{{ request.csp_nonce }}">
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("statusCheckForm");
+            const resultBox = document.getElementById("statusResult");
+            const uniqueCode = document.getElementById("uniqueCode");
+            const phoneNumber = document.getElementById("phoneNumber");
+        
+            // Default URL (first tab)
+            let selectedUrl = document.querySelector("#statusTabs .nav-link.active").getAttribute("data-status-url");
+        
+            // Tab switching logic
+            document.querySelectorAll("#statusTabs .nav-link").forEach(tab => {
+                tab.addEventListener("click", function () {
+                    // Mark active tab
+                    document.querySelectorAll("#statusTabs .nav-link").forEach(t => t.classList.remove("active"));
+                    this.classList.add("active");
+        
+                    // Update URL
+                    selectedUrl = this.getAttribute("data-status-url");
+        
+                    // Clear form + result
+                    form.reset();
+                    resultBox.innerHTML = "";
+                });
+            });
+        
+            // Form submission
+            form.addEventListener("submit", function (e) {
+                e.preventDefault();
+        
+                fetch(selectedUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    },
+                    body: JSON.stringify({
+                        unique_code: uniqueCode.value,
+                        phone_number: phoneNumber.value
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        resultBox.innerHTML = `
+                            <div class="alert alert-success">
+                                <strong>الحالة:</strong> ${data.status || "—"} <br>
+                                ${data.com_name ? `<strong>الشركة:</strong> ${data.com_name}<br>` : ""}
+                                ${data.brand ? `<strong>العلامة:</strong> ${data.brand}<br>` : ""}
+                                ${data.date ? `<strong>التاريخ:</strong> ${data.date}<br>` : ""}
+                                ${data.file ? `<strong>الملف:</strong> <a href="${data.file}" target="_blank">تحميل PDF</a><br>` : ""}
+                            </div>
+                        `;
+                    } else {
+                        resultBox.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    resultBox.innerHTML = `<div class="alert alert-danger">حدث خطأ أثناء التحقق.</div>`;
+                });
+            });
+        
+            // Reset on modal close
+            document.getElementById("statusModal").addEventListener("hidden.bs.modal", function () {
+                form.reset();
+                resultBox.innerHTML = "";
+
+            });
+        });
+        </script>
+        
+                
+
+    {% if request.user.is_authenticated %}
+        <script nonce="{{ request.csp_nonce }}">
+            // Ensure the triggerAutoscale function is called after 500ms
+            window.addEventListener('load', function() {
+            setTimeout(triggerAutoscale, 250);
+            });
+        </script>
+    {% endif %}
+
+    <script nonce="{{ request.csp_nonce }}">
+        let deferredPrompt;
+        
+        window.addEventListener("beforeinstallprompt", event => {
+            // If user opted out, do nothing
+            if (localStorage.getItem("hideInstallPrompt") === "true") return;
+            
+            event.preventDefault();
+            deferredPrompt = event;
+            
+            // Show the modal
+            let installModal = new bootstrap.Modal(document.getElementById('installModal'));
+            installModal.show();
+        });
+
+        document.getElementById("dontShowAgain").addEventListener("change", (e) => {
+            localStorage.setItem("hideInstallPrompt", e.target.checked ? "true" : "false");
+        });
+
+        document.getElementById("confirm-install").addEventListener("click", () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(choice => {
+                    if (choice.outcome === "accepted") {
+                        console.log("User installed the app");
+                    } else {
+                        console.log("User dismissed installation");
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        });
+    </script>
+
+    <script nonce="{{ request.csp_nonce }}">
+        document.addEventListener("DOMContentLoaded", function() {
+          if (document.cookie.includes("clear_otp_flag=1")) {
+            fetch("{% url 'clear_otp_session_flag' %}", {
+              method: "POST",
+              headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+              }
+            }).then(() => {
+              // Clear the cookie right after
+              document.cookie = "clear_otp_flag=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            });
+          }
+        });
+      </script>
+      
+
+{% endblock %}
+

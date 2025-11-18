@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinStor - {% block title %}{% endblock %}</title>
+    {% load static %}
+    {% load custom_filters %}
+    <!-- Include Bootstrap CSS -->
+    {% comment %} <link rel="shortcut icon" href="{% static 'favicon.png' %}" type="image/x-icon"> {% endcomment %}
+    <link rel="stylesheet" href="{% static 'bootstrap5/bootstrap.rtl.css' %}">
+    <link rel="stylesheet" href="{% static 'bootstrap5/bootstrap-icons.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+</head>
+<body>
+    <!-- Title Bar -->
+    <div class="titlebar d-flex justify-content-between align-items-center">
+        {% if user.is_authenticated %}
+            <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+        {% endif %}
+            <a href="{% url 'index' %}" style="text-decoration: none; color: inherit;">
+                <h1>FinStor System&nbsp;&nbsp;{% block header %}{% endblock %}</h1>
+            </a>
+            <!-- The Login Button -->
+        {% if user.is_authenticated %}
+            <!-- Dropdown Button and Menu for Authenticated User -->
+            <div class="pe-2 dropdown">
+                <button class="btn btn-sm btn-light dropdown-toggle login-title-btn" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-person-circle">&nbsp;</i> {{ user.username }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-start" aria-labelledby="userDropdown" style="min-width: 130px;">
+                    <li>
+                        <form method="POST" action="{% url 'logout' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="dropdown-item">
+                                تسجيل الخروج  &nbsp; <i class="bi bi-box-arrow-left"></i>
+                            </button>
+                        </form>
+                        <a class="dropdown-item" href="{% url 'user_profile' %}">
+                            الملف الشخصي &nbsp; <i class="bi bi-person-lines-fill"></i>
+                        </a>
+                        {% if user.is_superuser %}
+                        <a class="dropdown-item" href="{% url 'admin:index' %}">
+                            لوحة التحكم &nbsp; <i class="bi bi-shield-shaded"></i>
+                        </a>
+                        {% endif %}
+                    </li>
+                </ul>
+            </div>
+        {% endif %}
+    </div>
+    <div class="col">
+        <div class="row g-0 d-flex m-0">
+            <!-- Sidebar -->
+            {% if user.is_authenticated %}
+            <div class="col-2 flex-column shadow-sm sidebar {% if request.session.sidebarCollapsed %}collapsed{% endif %} no-print" id="sidebar">
+                {% include 'sidebar.html' %}
+            </div>
+        {% endif %}
+            <!-- Main Content -->
+            <div class="col-10 p-3 flex-column flex-fill" id="mainContent">
+                {% if not request.session.show_submission_modal and not request.session.show_submission_modal2 %}
+                    {% if messages %}
+                        <div class="alert-container position-absolute top-0 start-0 w-100">
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} text-center h4" style="opacity: 95%; z-index: 1090;">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endif %}
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const sidebar = document.getElementById("sidebar");
+            const sidebarToggle = document.getElementById("sidebarToggle");
+
+            // Function to handle sidebar collapsing based on window size
+            function adjustSidebarForWindowSize() {
+                const screenWidth = window.innerWidth;
+                if (screenWidth < 1100) {
+                    // Always collapse sidebar on small screens
+                    sidebar.classList.add("collapsed");
+                } else {
+                    // Use session state for larger screens
+                    const isSessionCollapsed = "{{ request.session.sidebarCollapsed|yesno:'true,false' }}" === "true";
+                    if (isSessionCollapsed) {
+                        sidebar.classList.add("collapsed");
+                    } else {
+                        sidebar.classList.remove("collapsed");
+                    }
+                }
+            }
+
+            // Adjust sidebar state on load
+            adjustSidebarForWindowSize();
+
+            // Listen for window resize
+            window.addEventListener("resize", adjustSidebarForWindowSize);
+
+            // Toggle sidebar and update session via AJAX
+            sidebarToggle.addEventListener("click", function () {
+                sidebar.classList.toggle("collapsed");
+                const isCollapsed = sidebar.classList.contains("collapsed");
+
+                // Only update session if screen width is >= 1100px
+                if (window.innerWidth >= 1100) {
+                    fetch("{% url 'toggle_sidebar' %}", {
+                        method: "POST",
+                        headers: {
+                            "X-CSRFToken": "{{ csrf_token }}",
+                            "Content-Type": "application/x-www-form-urlencoded",
+                        },
+                        body: `collapsed=${isCollapsed}`
+                    }).catch(error => console.error("Error updating sidebar state:", error));
+                }
+            });
+        });
+
+        // Close sidebar when clicking outside (only for small screens)
+        document.addEventListener("click", function (event) {
+            const screenWidth = window.innerWidth;
+            if (screenWidth < 1100 && !sidebar.contains(event.target) && !sidebarToggle.contains(event.target)) {
+                if (!sidebar.classList.contains("collapsed")) {
+                    sidebar.classList.add("collapsed");
+                    fetch("{% url 'toggle_sidebar' %}", {
+                        method: "POST",
+                        headers: {
+                            "X-CSRFToken": "{{ csrf_token }}",
+                            "Content-Type": "application/x-www-form-urlencoded",
+                        },
+                        body: "collapsed=true"
+                    }).catch(error => console.error("Error updating sidebar state:", error));
+                }
+            }
+        });
+    </script>
+
+
+    {% block scripts %}{% endblock %}
+
+    <!-- Include Bootstrap JS and dependencies -->
+    <script src="{% static 'bootstrap5/bootstrap.bundle.js' %}"></script>
+    {% comment %} <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script> {% endcomment %}
+</body>
+</html>

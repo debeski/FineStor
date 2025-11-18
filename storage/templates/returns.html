@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load django_tables2 %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+
+<!-- Main Card for Returned Items -->
+<div class="card">
+    <div class="card-header">
+        <div class="text-center me-5">
+            <h4>سجل الاعادة</h4>
+        </div>
+        <!-- Return Type Tabs -->
+        <ul class="nav nav-tabs card-header-tabs">
+            {% for return_type_key, return_type_label in return_types.items %}
+                <li class="nav-item">
+                    <a class="nav-link {% if return_type_key == selected_type %}active{% endif %}" 
+                       href="?return_type={{ return_type_key }}&{{ request.GET|build_query:'return_type' }}">
+                    {{ return_type_label }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    
+    <div class="card-body">
+        {% if messages %}
+            <div class="alert-container mb-3">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Add and Filter Form Row -->
+        <div class="row mb-2 mt-2">
+            <div class="col-md-auto">
+                <div class="form-group">
+                    <a href="{% url 'return_create' selected_type %}" class="btn btn-primary text-nowrap">اذن جديد</a>
+                </div>
+            </div>
+            <form method="GET" class="col row mb-2 mt-2" id="search-form">
+                <div class="col-sm-auto mb-2">
+                    <div class="form-group">
+                        <input type="text" placeholder="بحث بالرقم" name="trans_id" id="trans_id" class="form-control" value="{{ request.GET.trans_id }}">
+                    </div>
+                </div>
+                <div class="col-sm-auto">
+                    <div class="form-group">
+                        <input type="text" placeholder="بحث بالكلمات" name="search" id="search" class="form-control" value="{{ request.GET.search }}">
+                    </div>
+                </div>
+                <div class="col-sm-auto">
+                    <div class="form-group">
+                        <input type="date" placeholder="تاريخ البداية" name="start_date" id="start_date" class="form-control flatpickr" value="{{ request.GET.start_date }}">
+                    </div>
+                </div>
+                <div class="col-sm-auto">
+                    <div class="form-group">
+                        <input type="date" placeholder="تاريخ النهاية" name="end_date" id="end_date" class="form-control flatpickr" value="{{ request.GET.end_date }}">
+                    </div>
+                </div>
+                <div class="col-sm-auto">
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-secondary">بحث</button>
+                        {% if request.GET|has_non_sort_params:"sort" %}
+                            <button type="button" id="reset-btn" class="btn btn-warning">إعادة تعيين</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Render the Table -->
+        <div class="table-responsive">
+            {% render_table table %}
+        </div>
+    </div>
+</div>
+
+{% endblock%}
+
+{% block scripts %}
+    <link rel="stylesheet" href="{% static 'flatpickr/flatpickr.min.css' %}">
+    <script src="{% static 'flatpickr/flatpickr.min.js' %}"></script>
+    <script src="{% static 'flatpickr/locale/ar.js' %}"></script>
+
+    <script>
+        // Auto-hide messages after 5 seconds (5000 ms)
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                alert.style.transition = "opacity 0.5s";
+                alert.style.opacity = 0;
+                setTimeout(() => alert.remove(), 500); // Fully remove after fade-out
+            });
+        }, 3000);
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const resetButton = document.getElementById('reset-btn');
+            const form = document.getElementById('search-form');
+    
+            resetButton.addEventListener('click', function () {
+                const urlParams = new URLSearchParams(window.location.search);
+    
+                // Parameters to remove
+                const paramsToRemove = ['trans_id', 'search', 'start_date', 'end_date'];
+    
+                // Remove specified parameters
+                paramsToRemove.forEach(param => urlParams.delete(param));
+    
+                // Construct the new URL
+                const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
+    
+                // Reload the page with the new URL
+                window.location.href = newUrl;
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Flatpickr on all elements with the class 'flatpickr'
+            flatpickr('.flatpickr', {
+                dateFormat: "Y-m-d", // Set the desired date format
+                position: "auto center",
+                locale: "ar",
+                altInput: true, // Show the input field
+                altFormat: "d F Y", // Display format
+            });
+        });
+    </script>
+    
+{% endblock%}

@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load django_tables2 %}
+{% load static %}
+
+{% block content %}
+
+    <!-- Main Card for Report Type Selection -->
+    <div class="card mb-3">
+        <div class="card-header">
+            <div class="text-center">
+                <h4 class="me-5">التقــاريــر</h4>
+            </div>
+            <ul class="nav nav-tabs card-header-tabs" id="reportTabs">
+                {% for key, value in report_types.items %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if key == selected_type %}active{% endif %}" href="?report_type={{ key }}">
+                            {{ value }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="card-body">
+            {% if messages %}
+            <div class="alert-container mb-3">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} ">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+            <!-- Report Type Options (Dates, Committee Names, etc.) -->
+            <form id="report-form" method="POST" action="{% url 'storage_report' %}" target="{%if table %}_blank{% endif %}">
+                {% csrf_token %}
+                <div class="form-group col-lg-6 mb-4">
+                    {{ form.year }}
+                </div>
+                {% if table %}
+                <div class="form-group mb-3 col-lg-6 {% if comm %}disabled{% endif%}">
+                    <div class="form-control">
+                        <div class=" input-group row mb-2">
+                            <h5 class="col-sm-auto fw-bolder">رئيس اللجنة : </h5>
+                            <div class="col">{{ form.president }}</div>
+                        </div>
+                        <div class="row">
+                            <h5 class="col-sm-auto fw-bolder">الأعضاء : </h5>
+                            <div class="col">{{ form.members }}</div>
+                        </div>
+                    </div>
+                </div>
+                    <button type="submit" name="report_confirm" class="btn btn-success">طباعة</button>
+                    <a href="{% url 'storage_report' %}" class="btn btn-secondary">رجوع</a>
+                {% endif %}
+                {% if not table%}
+                    <button type="submit" name="report_initial" class="btn btn-primary">معاينة</button>
+                {% endif%}
+            </form>
+        </div>
+    </div>
+
+    <!-- Report Preview Card -->
+    {% if table %}
+    <div class="card">
+        <div class="card-header text-center">
+            <h4>مراجعة نموذج الجرد قبل الحفظ والطباعة</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                {% render_table table %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Get the year field element
+            const yearField = document.querySelector('#id_year'); // Replace '#year' with the correct ID or selector
+
+            if (yearField) {
+                yearField.addEventListener('change', function () {
+                    const selectedYear = yearField.value; // Get the selected year value
+                    const currentPath = window.location.pathname; // Get the current path
+
+                    // Reload the page with the new year parameter appended to the URL
+                    if (selectedYear) {
+                        window.location.href = `${currentPath}?year=${selectedYear}`;
+                    } else {
+                        // If no year is selected, reload the current page without parameters
+                        window.location.href = currentPath;
+                    }
+                });
+            }
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const selectElement = document.querySelector('select'); // Query the <select> element
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        
+            function updateCheckboxes() {
+                const selectedValue = selectElement.value; // Get the selected value from the <select> element
+        
+                checkboxes.forEach(checkbox => {
+                    if (checkbox.value === selectedValue) {
+                        checkbox.checked = false; // Uncheck the checkbox if it matches the selected value
+                        checkbox.disabled = true; // Disable the checkbox
+                    } else {
+                        checkbox.disabled = false; // Enable other checkboxes
+                    }
+                });
+            }
+        
+            // Attach event listener to the <select> element
+            selectElement.addEventListener('change', updateCheckboxes);
+        
+            // Initial update
+            updateCheckboxes();
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const formId = 'report-form'; // Replace with your form's ID or class
+            const storageKey = 'reportFormData'; // Session storage key
+        
+            const form = document.getElementById(formId);
+        
+            // Load saved data from session storage
+            const savedData = JSON.parse(sessionStorage.getItem(storageKey) || '{}');
+            for (const [fieldName, value] of Object.entries(savedData)) {
+                const field = form.elements[fieldName];
+                if (field) field.value = value; // Populate form fields
+            }
+        
+            // Save data to session storage on input change
+            form.addEventListener('input', function (event) {
+                const data = JSON.parse(sessionStorage.getItem(storageKey) || '{}');
+                data[event.target.name] = event.target.value; // Save current field's value
+                sessionStorage.setItem(storageKey, JSON.stringify(data));
+            });
+        
+            // Clear session storage on form submit
+            form.addEventListener('submit', function () {
+                sessionStorage.removeItem(storageKey);
+            });
+        });
+    </script>
+
+{% endblock %}

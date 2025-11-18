@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load django_tables2 %}
+{% load crispy_forms_tags %}
+{% block title %}الاعدادت - السجل{% endblock %}
+
+{% block content %}
+
+<form method="get" class="py-3 row g-2 no-print m-0">
+    {% crispy filter.form %}
+</form>
+
+    <div class="card border-light shadow">
+        <div class="card-header text-center pe-5 text-bg-warning">
+            <h3 class="card-title">السجل</h3>
+        </div>
+        <div class="card-body p-0 table-responsive">
+            <!-- Render the table -->
+            {% render_table table %}
+        </div>
+    </div>
+
+{% endblock %}

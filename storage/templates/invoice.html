@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load django_tables2 %}
+{% load static %}
+
+{% block content %}
+
+    <!-- Main transaction form -->
+    <div class="card mb-3">
+        <div class="card-header text-center me-5">
+            <h4>إضافة اذن استلام جديد</h4>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+
+                <!-- Import Item Form -->
+                <div class="col-md-6">
+                    <div class="card border-info">
+                        <div class="card-header text-center">
+                            <h4>إضافة صنف</h4>
+                        </div>
+                        <div class="card-body">
+                            <form id="item-form" method="GET" action="{% url 'import_item_add' %}">
+                                {% csrf_token %}
+                                {% crispy import_item_form %}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <!-- Import Record Form -->
+                    <div class="card border-info">
+                        <div class="card-header text-center">
+                            <h4>تفاصيل اذن الاستلام</h4>
+                        </div>
+                        <div class="card-body">
+                            <form id="import-form" method="POST" action="{% url 'import_create' %}">
+                                {% csrf_token %}
+                                {% crispy import_record_form %}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section to Display Added Items -->
+            <div id="added-items" class="table-responsive mt-3">
+                <table class="table table-striped">
+                    <thead class="card-header">
+                        <tr>
+                            <th>الصنف</th>
+                            <th>الكمية</th>
+                            <th>الوحدة</th>
+                            <th>السعر</th>
+                            <th>الاجمالي</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in import_items %}
+                            <tr>
+                                <td>{{ item.name }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>{{ item.unit }}</td>
+                                <td>{{ item.price }}</td>
+                                <td>{{ item.total }}</td>
+                                <td>
+                                    <a class="btn btn-dark btn-sm" href="{% url 'import_item_delete' item.id %}">حذف!</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+    <link rel="stylesheet" href="{% static 'flatpickr/flatpickr.min.css' %}">
+    <script src="{% static 'flatpickr/flatpickr.min.js' %}"></script>
+    <script src="{% static 'flatpickr/locale/ar.js' %}"></script>
+
+    <!-- Script to store Record Fields in Session between Item additions-->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const formId = 'import-form'; // Replace with your form's ID or class
+            const storageKey = 'importRecordFormData'; // Session storage key
+        
+            const form = document.getElementById(formId);
+        
+            // Load saved data from session storage
+            const savedData = JSON.parse(sessionStorage.getItem(storageKey) || '{}');
+            for (const [fieldName, value] of Object.entries(savedData)) {
+                const field = form.elements[fieldName];
+                if (field) field.value = value; // Populate form fields
+            }
+        
+            // Save data to session storage on input change
+            form.addEventListener('input', function (event) {
+                const data = JSON.parse(sessionStorage.getItem(storageKey) || '{}');
+                data[event.target.name] = event.target.value; // Save current field's value
+                sessionStorage.setItem(storageKey, JSON.stringify(data));
+            });
+        
+            // Clear session storage on form submit
+            form.addEventListener('submit', function () {
+                sessionStorage.removeItem(storageKey);
+            });
+        });
+    </script>
+
+    <!-- Script to Show Assets based Category-->
+    <script type="text/javascript">
+        document.addEventListener("DOMContentLoaded", function() {
+            const categorySelect = document.getElementById('id_asset_cat');
+            const assetSelect = document.getElementById('id_asset');
+
+            categorySelect.addEventListener('change', function() {
+                const categoryId = this.value;
+
+                // Fetch assets based on the selected category
+                fetch(`/get_assets/${categoryId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Clear current options
+                        assetSelect.innerHTML = '';
+                        data.assets.forEach(asset => {
+                            const option = document.createElement('option');
+                            option.value = asset.id;
+                            option.textContent = asset.name;
+                            assetSelect.appendChild(option);
+                        });
+                    });
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Flatpickr on all elements with the class 'flatpickr'
+            flatpickr('.flatpickr', {
+                dateFormat: "Y-m-d", // Set the desired date format
+                position: "auto",
+                locale: "ar",
+                altInput: true, // Show the input field
+                altFormat: "d F Y", // Display format
+            });
+        });
+    </script>
+
+{% endblock %}

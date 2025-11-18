@@ -1,0 +1,136 @@
+x-environment: &default-environment
+  # Name of the databse. 'used in core.settings.py'
+  POSTGRES_DB: "finestor"
+  # Default user for interaction with postgres psycopg client. 'used in core.settings.py'
+  POSTGRES_USER: "postgres"
+  # Default postgres port. 'used in core.settings.py'
+  POSTGRES_PORT: 5432
+  # Default postgres HOST. 'used in core.settings.py'
+  POSTGRES_HOST: "db"
+  # Default URL for redis cache services. 'used in core.settings.py'
+  REDIS_URL_DB: "redis://redis:6379/1"
+  REDIS_HOST: "redis"
+  REDIS_PORT: 6379
+  # Default URLs for celery background services. 'used in core.settings.py'
+  # CELERY_BROKER_URL: "redis://redis:6379/2"
+  # CELERY_RESULT_BACKEND: "redis://redis:6379/3"
+  # Time interval between db backups in seconds.
+  BACKUP_INTERVAL: "86400"
+  # Maximum number of days backups are allowed to be saved.
+  RETENTION_DAYS: "7"
+  # List of allowed hosts to visit the web application. 'used in core.settings.py'
+  ALLOWED_HOSTS: "*"
+  # Base URL for the web application. 'used in core.settings.py'
+  BASE_URL: "http://127.0.0.1:8000"
+  # Debug status for the web application. 'used in core.settings.py'
+  DEBUG_STATUS: "True"
+  # SSL status for the web application. 'used in core.settings.py'
+  SSL_STATUS: "False"
+  # Sensitive information like the django_secret_key and postgres_password are kept safe using docker secrets.
+  DJANGO_SECRET_KEY: 'db19940930yayaya664a5shit_r9tLThahaBGsmvjRyqw6r9sh3mjey8ohhweee_yeah'
+  POSTGRES_PASSWORD: 'db123123'
+  PGADMIN_DEFAULT_EMAIL: 'admin@exmple.com'
+  PGADMIN_DEFAULT_PASSWORD: 'db123123'
+
+services:
+  # Main database server Postgres 17
+  db:
+    image: postgres:17
+    container_name: fin_db
+    restart: unless-stopped
+    environment:
+      <<: *default-environment
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+
+  # Main cache server Redis 7
+  redis:
+    image: redis:7
+    container_name: fin_cache
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "everysec", "--maxmemory", "500mb", "--maxmemory-policy", "allkeys-lru"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "6379:6379"
+
+  # On-call service, collects staticfiles, runs migrations, and exits.
+  migrator:
+    image: debeski/finestor:latest
+    container_name: fin_migrator
+    restart: no
+    command: >
+      /bin/sh -c '
+      python manage.py migrator'
+    entrypoint: [""]
+    environment:
+      <<: *default-environment
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+      - logs_volume:/app/logs
+      - users_migrations:/app/users/migrations
+      - core_migrations:/app/core/migrations
+      - storage_migrations:/app/storage/migrations
+      - finance_migrations:/app/finance/migrations
+      - salary_migrations:/app/salary/migrations
+      - treasury_migrations:/app/treasury/migrations
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # Main Trademarks Django application
+  web:
+    image: debeski/finestor:latest
+    container_name: fin_app
+    ports:
+      - "8000:8000"
+    user: "1001:1001"
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+    entrypoint: ["/app/entrypoint.sh"]
+    environment:
+      <<: *default-environment
+    volumes:
+      - ./:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+      - logs_volume:/app/logs
+      - users_migrations:/app/users/migrations
+      - core_migrations:/app/core/migrations
+      - storage_migrations:/app/storage/migrations
+      - finance_migrations:/app/finance/migrations
+      - salary_migrations:/app/salary/migrations
+      - treasury_migrations:/app/treasury/migrations
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # List of mounted volumes to all services
+volumes:
+  postgres_data:
+  redis_data:
+  media_volume:
+  static_volume:
+  logs_volume:
+  users_migrations:
+  core_migrations:
+  storage_migrations:
+  finance_migrations:
+  salary_migrations:
+  treasury_migrations:

@@ -1,0 +1,279 @@
+/* General styles */
+* {
+    box-sizing: border-box;
+    font-family: 'Shabwa', sans-serif;
+    direction: rtl;
+}
+
+:root {
+    --title: #35414e;
+    --body: #f5f5f5;
+    --htitle: #88c1fa;
+    --hbody: #b3d9ff;
+}
+
+@font-face {
+    font-family: 'Shabwa';
+    font-weight: 400; /* Regular */
+    font-style: normal;
+    src: url('../fonts/Shabwa.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Shabwa';
+    font-weight: 600; /* Medium */
+    font-style: normal;
+    src: url('../fonts/Shabwa-Medium.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Shabwa';
+    font-weight: 800; /* Bold */
+    font-style: normal;
+    src: url('../fonts/Shabwa-Bold.ttf') format('truetype');
+}
+
+input[dir="rtl"]::placeholder {
+    text-align: right;
+    color: #484848;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--body);
+}
+
+/* Titlebar Style */
+.titlebar {
+    background-color: var(--title);
+    flex-direction: row;
+    height: 7vh;
+}
+
+/* Titlebar Text */
+.titlebar h1 {
+    flex: 1;
+    padding: 0px 10px 0px 0px;
+    color: white;
+    transition: font-size 0.3s;
+    text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black;
+}
+
+@media (max-height: 600px) {
+    .titlebar h1 {
+        font-size: 20px;
+    }
+}    
+
+/* Titlebar Button */
+.menu-toggle {
+    background-color: var(--title);
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 15px;
+    transition: background-color 0.3s, transform 0.1s;
+    width: auto;
+    text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black;
+}
+
+.menu-toggle:hover {
+    background-color: var(--body);
+    color: black;
+}
+
+.menu-toggle:active {
+    transform: scale(0.95);
+}
+
+/* Container Fluid Layout */
+.layout {
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+}
+
+/* Main Content */
+.main-content{
+    display: flex;
+    flex-direction:column;
+    flex-grow: 3;
+}
+
+/* Sidebar Design */
+.sidebar {
+    /* background-color: white; */
+    color: black;
+    width: 200px;
+    transition: width 0.5s ease-in-out;
+    overflow: hidden;
+    flex-grow: 0;
+    box-shadow: -10px 0 5px -12px rgba(81, 81, 81, 0.5); /* Left-pointing shadow */
+}
+
+.sidebar.collapsed {
+    width: 0 !important;
+    overflow: hidden;
+}
+
+.accordion-button {
+    font-size: 20px;
+    font-weight: 600;
+    padding: 10px 10px;
+    text-align: right;
+    border: none;
+    transition: background-color 0.3s, font-size 0.3s;
+    width: 100%;
+    white-space: nowrap;
+    position: relative;
+}
+
+.acc-button {
+    font-size: 18px;
+    font-weight: 600;
+    padding: 5px 5px;
+    text-align: right;
+    background-color: var(--body) ;
+    transition: background-color 0.3s, font-size 0.3s;
+    color: rgb(44, 44, 44);
+    width: 100%;
+    white-space: nowrap;
+    position: relative;
+    border: none;
+    padding: 10px 10px;
+}
+
+/* Sidebar Icons */
+/* .dbutton-icon {
+    width: 23px;
+    height: auto;
+    margin-right: 0px;
+    margin-left: 4px;
+    vertical-align: middle;
+    transition: margin 0.2s, width 0.2s;
+} */
+
+.acc-button:hover {
+    background-color: var(--hbody);
+    font-size: 19px;
+}
+.accordion-button:hover {
+    background-color: var(--hbody);
+    font-size:21px;
+}
+
+.acc-button.active {
+    background-color: var(--hbody);
+    font-size: 19px;
+    pointer-events: none;
+}
+
+.acc-button-a.active {
+    pointer-events: none;
+}
+
+@media (max-width: 1200px) {
+    .accordion-button {
+        font-size: 18px;
+        overflow: hidden;
+    }
+    .accordion-button:hover {
+        font-size: 19px;
+    }
+    .acc-button {
+        font-size: 16px;
+        overflow: hidden;
+    }
+    .acc-button:hover {
+        font-size: 17px;
+    }
+    .acc-button.active {
+        font-size: 17px;
+    }
+    /* .dbutton-icon {
+        width: 20px;
+        height: auto;
+        margin-left: 0px;
+    } */
+}    
+
+@media (max-width: 1000px) {
+    .sidebar {
+        width: 0; /* Start closed on small screens */
+        overflow: hidden;
+    }
+}
+
+.button-group{
+    padding: 10px;
+}
+
+/* Header Container */
+.header {
+    display: flex;
+    justify-content: start;
+    margin-bottom: none;
+    width: auto;
+    margin: 2.7vh 2vw;
+    align-items: center;
+    gap: 1vw;
+}
+
+.table-container {
+    width: 100%;
+    font-size: 16px;
+    font-weight: 600;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    border-collapse: collapse;
+    text-align: right;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.disabled {
+    opacity: 0.5; /* Make it appear faded */
+    pointer-events: none; /* Disables all mouse interactions */
+}
+
+.checkbox-inline {
+    display:inline-flex;
+    margin-left: 5px;  /* Optional: Add some space between checkboxes */
+    margin-right: 10px;
+}
+
+.alert {
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out;
+}
+
+
+#id_members {
+    border:1px solid #dbdbdb;
+    border-radius: 3px;
+    height: 150px;
+    overflow-y: scroll;
+    padding: 5px;
+}
+
+#id_year {
+    direction: rtl;
+}
+
+.option-separator {
+    border-bottom: 1px solid #ddd; /* Adds a thin line */
+    padding-bottom: 5px; /* Adds spacing below each option */
+}
+.option-separator:last-of-type {
+    border-bottom: none; /* Remove border for the last item */
+}
+
+
+td:last-child, th:last-child {
+    width: 150px; /* Allow flexibility */
+    min-width: 100px;
+}

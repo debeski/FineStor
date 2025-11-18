@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load django_tables2 %}
+{% load static %}
+
+{% block content %}
+
+    <!-- Main Card for Asset Types and Assets Table -->
+    <div class="card mb-3">
+        <div class="card-header">
+            <div class="text-center">
+                <h4 class="me-5">{% if editing %}تعديل صنف{% else %}اضافة صنف جديد{% endif %}</h4>
+            </div>
+            <ul class="nav nav-tabs card-header-tabs">
+                <li class="nav-item">
+                    <a class="nav-link {% if not selected_cat %}active{% endif %}" href="?">الكل</a>
+                </li>
+                {% for key, value in categories.items %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if key == selected_cat.id %}active{% endif %}" 
+                            href="?category={{ key }}">{{ value }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="card-body">
+            <!-- Tabs for Asset Types -->
+
+            <!-- Form for Adding New Assets -->
+            <div class="mt-3">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    {% crispy form %}
+                </form>
+            </div>
+        </div>
+    </div>
+
+            <!-- Table for Assets -->
+    <div class="card">
+        <div class="card-header text-center">
+            <h4 class="me-5">قائمة الاصناف</h4>
+        </div>
+        <div class="card-body">
+            <form method="get">
+                {{ filter.form.as_p }}  <!-- Render the filter form -->
+                <button type="submit" class="btn btn-primary">Filter</button>
+            </form>
+            <div class="table-responsive">
+            {% render_table table %}
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

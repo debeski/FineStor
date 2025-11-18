@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load django_tables2 %}
+{% load static %}
+
+{% block content %}
+
+<div class="card">
+    <div class="card-header text-center">
+        <h4>إنشاء عملية ترجيع</h4>
+    </div>
+    <div class="card-body">
+        <!-- Form for selecting ExportRecord -->
+        <form method="POST" id="record-form">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="record-search">اختر اذن الصرف</label>
+                <select id="record-search" name="record_id" class="form-control">
+                    <!-- Populate dynamically with JS -->
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">تأكيد</button>
+        </form>
+
+        <!-- Form for adding items -->
+        <form method="POST" id="item-form">
+            {% csrf_token %}
+            <div class="form-group mt-3">
+                <label for="item-select">اختر صنف للترجيع</label>
+                <select id="item-select" name="item_id" class="form-control">
+                    <!-- Populate dynamically with JS -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="return_purpose">سبب الترجيع</label>
+                <input type="text" name="return_purpose" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="return_condition">حالة الصنف</label>
+                <input type="text" name="return_condition" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-secondary mt-2">إضافة</button>
+        </form>
+
+        <!-- Section to display added items -->
+        <div id="added-items" class="mt-4">
+            <h5>الأصناف المراد إرجاعها:</h5>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>اسم الصنف</th>
+                        <th>الكمية</th>
+                        <th>سبب الترجيع</th>
+                        <th>حالة الصنف</th>
+                        <th>حذف</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in return_items %}
+                        <tr>
+                            <td>{{ item.name }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>{{ item.return_purpose }}</td>
+                            <td>{{ item.return_condition }}</td>
+                            <td>
+                                <a href="{% url 'return_item_delete' item.id %}" class="btn btn-danger btn-sm">حذف</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Finalize Return -->
+        <form method="POST" class="mt-3">
+            {% csrf_token %}
+            <button type="submit" name="finalize_return" class="btn btn-success">تأكيد الإرجاع</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const recordSearch = document.getElementById('record-search');
+        const itemSelect = document.getElementById('item-select');
+
+        recordSearch.addEventListener('change', function() {
+            const recordId = this.value;
+
+            // Fetch items for the selected record
+            fetch(`/get_export_items/${recordId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    itemSelect.innerHTML = '';
+                    data.items.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item.id;
+                        option.textContent = `${item.asset__name} (Qty: ${item.quantity})`;
+                        itemSelect.appendChild(option);
+                    });
+                });
+        });
+    });
+</script>
+
+{% endblock %}
+
+
+
+
+{% comment %} <div class="card mb-3">
+    <div class="card-header">
+        <h4>إرجاع الأصناف - اذن الصرف رقم <strong>{{ record.trans_id }}</strong></h4>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            {% csrf_token %}
+            <table class="table table-bordered mt-2 p-3">
+                <thead class="table-light">
+                    <tr>
+                        <th></th>
+                        <th>الصنف</th>
+                        <th>العلامة</th>
+                        <th>الكمية</th>
+                        <th>الوحدة</th>
+                        {% if selected_items %}
+                            <th>سبب الإرجاع</th>
+                            <th>حالة الإرجاع</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in record.items %}
+                        <tr>
+                            <td>
+                                <input type="checkbox" name="item_ids" value="{{ item.id }}" 
+                                       {% if item in selected_items %}checked{% endif %}>
+                            </td>
+                            <td>{{ item.name }}</td>
+                            <td>{{ item.brand }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>{{ item.unit }}</td>
+                            
+                            {% if selected_items %}
+                                <!-- Show return fields for selected items -->
+                                <td>
+                                    {{ form.return_at}}
+                                </td>
+                                <td>
+                                    {{ form.return_purpose}}
+                                </td>
+                                <td>
+                                    {{ form.return_condition}}
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        
+            <div class="text-end mt-4">
+                {% if selected_items %}
+                    <!-- Show Confirm button when items are selected -->
+                    <button type="submit" class="btn btn-danger">تأكيد الإرجاع</button>
+                {% else %}
+                    <!-- Show Next button for the first step -->
+                    <button type="submit" class="btn btn-primary">التالي</button>
+                {% endif %}
+            </div>
+        </form>
+        
+
+            <!-- Submit and Cancel Buttons -->
+            <div class="text-end mt-4">
+                <button type="button" class="btn btn-secondary" onclick="window.history.back();">
+                    إلغاء
+                </button>
+            </div>
+        </form>
+    </div>
+</div> {% endcomment %}

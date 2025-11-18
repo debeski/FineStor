@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load django_tables2 %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+
+    <!-- Export Type Tabs -->
+    <div class="card mb-3">
+        <div class="card-header">
+            <div class="text-center me-5">
+                <h4>اضافة اذن صرف جديد</h4>
+            </div>
+            <ul class="nav nav-tabs card-header-tabs">
+                <li class="nav-item">
+                    <a class="nav-link disabled" href="?">الكل</a>
+                </li>
+                {% for export_type_value, export_type_label in export_types.items %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if export_type_value == export_type %}active{% endif %}"
+                            href="{% url 'export_create' export_type_value %}">
+                            {{ export_type_label }}
+                        </a>
+                    </li>
+                {% endfor %}
+
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+
+                <!-- Export Item Form -->
+                <div class="col-md-6">
+                    <div class="card border-info">
+                        <div class="card-header text-center">
+                            <h4>إضافة صنف</h4>
+                        </div>
+                        <div class="card-body">
+                            <form id="item-form" method="GET" action="{% url 'export_item_add' export_type %}">
+                                {% csrf_token %}
+                                {% crispy export_item_form %}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Export Record Form -->
+                <div class="col-md-6">
+                    <div class="card border-info">
+                        <div class="card-header text-center">
+                            <h4>تفاصيل اذن الصرف</h4>
+                        </div>
+                        <div class="card-body">
+                            <form id="export-form" method="POST" action="{% url 'export_create' export_type %}">
+                                {% csrf_token %}
+                                {% crispy export_record_form %}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Item Table in Form -->
+            <div id="added-items" class="table-responsive mt-3">
+                <table class="table table-striped">
+                    <thead class="card-header">
+                        <tr>
+                            <th>الصنف</th>
+                            <th>الكمية</th>
+                            <th>الوحدة</th>
+                            <th>متوسط السعر</th>
+                            <th>الاجمالي</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in export_items %}
+                        <tr>
+                            <td>{{ item.name }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>{{ item.unit }}</td>
+                            <td>{{ item.price }}</td>
+                            <td>{{ item.total }}</td>
+                            <td>
+                                <a class="btn btn-dark btn-sm" href="{% url 'export_item_delete' export_type item.id %}">حذف</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+    <link rel="stylesheet" href="{% static 'flatpickr/flatpickr.min.css' %}">
+    <script src="{% static 'flatpickr/flatpickr.min.js' %}"></script>
+    <script src="{% static 'flatpickr/locale/ar.js' %}"></script>
+
+    <script>
+        function setExportType(exportType) {
+            // Store the selected export type in a hidden field or session
+            document.getElementById('export_type').value = exportType;
+        }
+    </script>
+
+    <script>
+        // Script to store Record Fields in Session between Item additions
+        document.addEventListener('DOMContentLoaded', function () {
+            const formId = 'export-form'; // Replace with your form's ID or class
+            const storageKey = 'exportRecordFormData'; // Session storage key
+        
+            const form = document.getElementById(formId);
+        
+            // Load saved data from session storage
+            const savedData = JSON.parse(sessionStorage.getItem(storageKey) || '{}');
+            for (const [fieldName, value] of Object.entries(savedData)) {
+                const field = form.elements[fieldName];
+                if (field) field.value = value; // Populate form fields
+            }
+        
+            // Save data to session storage on input change
+            form.addEventListener('input', function (event) {
+                const data = JSON.parse(sessionStorage.getItem(storageKey) || '{}');
+                data[event.target.name] = event.target.value; // Save current field's value
+                sessionStorage.setItem(storageKey, JSON.stringify(data));
+            });
+        
+            // Clear session storage on form submit
+            form.addEventListener('submit', function () {
+                sessionStorage.removeItem(storageKey);
+            });
+        });
+    </script>
+
+    <script>
+        // Script to Show Assets based Category
+        document.addEventListener("DOMContentLoaded", function() {
+            const categorySelect = document.getElementById('id_asset_cat');
+            const assetSelect = document.getElementById('id_asset');
+
+            categorySelect.addEventListener('change', function() {
+                const categoryId = this.value;
+
+                // Fetch assets based on the selected category
+                fetch(`/get_ex_assets/${categoryId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Clear current options
+                        assetSelect.innerHTML = '';
+                        data.assets.forEach(asset => {
+                            const option = document.createElement('option');
+                            option.value = asset.id;
+                            option.textContent = asset.name;
+                            assetSelect.appendChild(option);
+                        });
+                    });
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Flatpickr on all elements with the class 'flatpickr'
+            flatpickr('.flatpickr', {
+                dateFormat: "Y-m-d", // Set the desired date format
+                position: "auto",
+                locale: "ar",
+                altInput: true, // Show the input field
+                altFormat: "d F Y", // Display format
+            });
+        });
+    </script>
+
+        {% comment %} 
+        // Ensure the correct tab is active on page load (if dynamically rendered)
+        document.addEventListener('DOMContentLoaded', () => {
+            const activeTab = document.querySelector('.nav-link.active');
+            if (activeTab) {
+                const tabPaneId = activeTab.getAttribute('href');
+                document.querySelector(tabPaneId).classList.add('show', 'active');
+            }
+        }); {% endcomment %}
+
+{% endblock %}
