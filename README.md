@@ -1,4 +1,9 @@
-disclaimer: this app is a free to use app as long as no rpofit is being made selling it and, or maintaining it.
+YOU ONLY NEED THE DOCKER-COMPOSE.YML FILE FOR DEPLOYMENT.
+
+SIMPLY INSTALL DOCKER IF YOU DONT HAVE IT ALREADY, ENTER THE DIRECTORY WHERE THE DOCKER-COMPOSE.YML FILE IS.
+
+OPEN A CMD WINDOW AND RUN 'docker compose up -d'
+
 
 
 version_history:
