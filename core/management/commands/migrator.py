@@ -1,3 +1,4 @@
+import os
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
 from django.contrib.auth import get_user_model
@@ -25,7 +26,14 @@ class Command(BaseCommand):
         User = get_user_model()
         username = 'admin'
         email = 'admin@example.com'
-        password = 'db123123'
+        # Read admin pass from env, fallback to "admin"
+        password = os.getenv("ADMIN_PASS", "admin")
+
+        if password == "admin":
+            self.stdout.write(self.style.WARNING(
+                "ADMIN_PASS not supplied — falling back to default password: 'admin'"
+            ))
+
         if not User.objects.filter(username=username).exists():
             self.stdout.write("Superuser not found. Creating superuser...")
             User.objects.create_superuser(username=username, email=email, password=password)

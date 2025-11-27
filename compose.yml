@@ -1,36 +1,30 @@
-x-environment: &default-environment
-  # Name of the databse. 'used in core.settings.py'
+x-environment: &de
+  # Name of this Project
+  COMPOSE_PROJECT_NAME: "finestor"
+  # Database settings
   POSTGRES_DB: "finestor"
-  # Default user for interaction with postgres psycopg client. 'used in core.settings.py'
   POSTGRES_USER: "postgres"
-  # Default postgres port. 'used in core.settings.py'
-  POSTGRES_PORT: 5432
-  # Default postgres HOST. 'used in core.settings.py'
+  POSTGRES_PORT: "5432"
   POSTGRES_HOST: "db"
-  # Default URL for redis cache services. 'used in core.settings.py'
+  # Redis / Celery
   REDIS_URL_DB: "redis://redis:6379/1"
   REDIS_HOST: "redis"
-  REDIS_PORT: 6379
-  # Default URLs for celery background services. 'used in core.settings.py'
+  REDIS_PORT: "6379"
   # CELERY_BROKER_URL: "redis://redis:6379/2"
   # CELERY_RESULT_BACKEND: "redis://redis:6379/3"
-  # Time interval between db backups in seconds.
-  BACKUP_INTERVAL: "86400"
-  # Maximum number of days backups are allowed to be saved.
+  # Backup settings
+  BACKUP_INTERVAL: "680400"
   RETENTION_DAYS: "7"
-  # List of allowed hosts to visit the web application. 'used in core.settings.py'
+  # Web app settings
   ALLOWED_HOSTS: "*"
-  # Base URL for the web application. 'used in core.settings.py'
-  BASE_URL: "http://127.0.0.1:8000"
-  # Debug status for the web application. 'used in core.settings.py'
+  BASE_URL: "http://localhost:4200"
   DEBUG_STATUS: "True"
-  # SSL status for the web application. 'used in core.settings.py'
-  SSL_STATUS: "False"
-  # Sensitive information like the django_secret_key and postgres_password are kept safe using docker secrets.
-  DJANGO_SECRET_KEY: 'db19940930yayaya664a5shit_r9tLThahaBGsmvjRyqw6r9sh3mjey8ohhweee_yeah'
+  # Secrets
+  DJANGO_SECRET_KEY: 'db1994micro-unsecure-alpha|stage'
   POSTGRES_PASSWORD: 'db123123'
   PGADMIN_DEFAULT_EMAIL: 'admin@exmple.com'
   PGADMIN_DEFAULT_PASSWORD: 'db123123'
+  ADMIN_PASS: "db123123"
 
 services:
   # Main database server Postgres 17
@@ -39,7 +33,7 @@ services:
     container_name: fin_db
     restart: unless-stopped
     environment:
-      <<: *default-environment
+      <<: *de
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -47,8 +41,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    ports:
-      - "5432:5432"
+    networks:
+      - app
 
   # Main cache server Redis 7
   redis:
@@ -63,20 +57,20 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    ports:
-      - "6379:6379"
+    networks:
+      - app
 
   # On-call service, collects staticfiles, runs migrations, and exits.
   migrator:
     image: debeski/finestor:latest
     container_name: fin_migrator
-    restart: no
+    restart: none
     command: >
       /bin/sh -c '
       python manage.py migrator'
     entrypoint: [""]
     environment:
-      <<: *default-environment
+      <<: *de
     volumes:
       - static_volume:/app/staticfiles
       - media_volume:/app/media
@@ -92,18 +86,20 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    networks:
+      - app
 
   # Main Trademarks Django application
   web:
     image: debeski/finestor:latest
     container_name: fin_app
     ports:
-      - "8000:8000"
+      - "4200:8000"
     user: "1001:1001"
     command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
     entrypoint: ["/app/entrypoint.sh"]
     environment:
-      <<: *default-environment
+      <<: *de
     volumes:
       - ./:/app
       - static_volume:/app/staticfiles
@@ -120,11 +116,84 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    networks:
+      - app
 
-  # List of mounted volumes to all services
+  # Web-based Postgres database manager pgAdmin 4
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: fin_pgadmin
+    environment:
+      <<: *de
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - db
+    networks:
+      - app
+  
+  # Portainer server for managing docker containers
+  portainer:
+    image: portainer/portainer-ce:2.20.2
+    container_name: fin_portainer
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    networks:
+      - app
+
+  # Database backup service
+  db-backup:
+    image: postgres:17
+    container_name: fin_db_backup
+    restart: unless-stopped
+    command: >
+      bash -c '
+      while true; do
+          # Use environment variables directly instead of secrets
+          export PGPASSWORD=$$POSTGRES_PASSWORD
+          backup_file="/backups/backup_$$(date +%Y-%m-%d_%H-%M-%S).pgdump"
+
+          echo "Starting backup: $$backup_file"
+          
+          # Retry the pg_dump if it fails
+          attempts=0
+          max_attempts=5
+          until pg_dump -Fc -h $$POSTGRES_HOST -U $$POSTGRES_USER $$POSTGRES_DB -f $$backup_file || [ $$attempts -ge $$max_attempts ]; do
+              echo "pg_dump failed, retrying..."
+              attempts=$$((attempts+1))
+              sleep 5
+          done
+          
+          if [ $$attempts -ge $$max_attempts ]; then
+              echo "Backup failed after $$attempts attempts" >&2
+              rm -f $$backup_file
+          else
+              echo "Backup successful: $$backup_file"
+              find /backups -name "*.pgdump" -mtime +$$RETENTION_DAYS -delete
+          fi
+          sleep $$BACKUP_INTERVAL
+      done'
+    environment:
+      <<: *de
+    volumes:
+      - ./backups/:/backups
+    depends_on:
+      - db
+    networks:
+      - app
+
+# List of mounted volumes to all services
 volumes:
   postgres_data:
   redis_data:
+  pgadmin_data:
+  portainer_data:
   media_volume:
   static_volume:
   logs_volume:
@@ -134,3 +203,8 @@ volumes:
   finance_migrations:
   salary_migrations:
   treasury_migrations:
+
+# List of Networks
+networks:
+  app:
+    driver: bridge

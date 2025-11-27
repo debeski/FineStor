@@ -1,4 +1,4 @@
-Non-Commercial License for FineStor
+**Non-Commercial License for FineStor**
 
 Copyright (c) 2025 DeBeski
 
@@ -6,9 +6,37 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 
 This repository includes or relies on the following open-source software components:
 
-- Docker (https://www.docker.com/) – Apache License 2.0.
+- **Docker** (https://www.docker.com/) – Apache License 2.0
+- **Python** (https://www.python.org/) – Python Software Foundation License
+- **Redis** (https://redis.io/) – BSD 3-Clause License
+- **PostgreSQL** (https://www.postgresql.org/) – PostgreSQL License
+- **Portainer** (https://www.portainer.io/) – Apache License 2.0
+- **pgAdmin** (https://www.pgadmin.org/) – PostgreSQL License
+- **Nginx** (https://nginx.org/) – BSD 2-Clause License
+- **Linux** (various distributions) – GNU GPL v2.0 or later
 
-The use of this repository does **not override the licenses of the included dependencies**. Users must comply with the original licenses of all third-party components.
+The following Python packages are included as dependencies:
+- Django (BSD License)
+- Gunicorn (MIT License)
+- Pillow (HPND License)
+- Psycopg2 (LGPL License)
+- Celery (BSD License)
+- Redis Python client (MIT License)
+- Pandas (BSD License)
+- NumPy (BSD License)
+- Plotly (MIT License)
+- And other packages as listed in requirements.txt
 
-DISCLAIMER:
+The use of this repository does **not override the licenses of the included dependencies**. Users must comply with the original licenses of all third-party components. Some components may have copyleft licenses that require derivative works to be released under the same license.
+
+**Additional Restrictions:**
+- This software may not be used in production environments for commercial purposes
+- No warranty or support is provided for the integrated components
+- Users are responsible for ensuring compliance with all dependency licenses
+- Modification and distribution must maintain all original license notices
+
+**DISCLAIMER:**
 THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+---
+*Note: This license covers the FineStor application code. All third-party components remain under their original open-source licenses. Users should verify license compatibility for their specific use case.*

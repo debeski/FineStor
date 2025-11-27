@@ -1,15 +1,18 @@
-# Ignore Python bytecode files
+# Ignore Python and OS bytecode files
 **/__pycache__/
 *.pyc
 *.pyo
 **/.DS_Store
 .VSCodeCounter
+desktop.ini
+autorun.ini
 
 # Ignore app directories
 logs
 media
 staticfiles
 xpose
+backups
 
 # Ignore Docker-related files
 # .dockerignore
@@ -21,3 +24,6 @@ logs.txt
 celerybeat-schedule
 celerybeat-schedule-shm
 celerybeat-schedule-wal
+
+# Ignore Sensetive Secrets
+.env

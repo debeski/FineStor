@@ -70,7 +70,7 @@ WSGI_APPLICATION = 'main.wsgi.application'
 LOGIN_REDIRECT_URL = '/'
 
 # # Specifies the URL to redirect to for the login page.
-# LOGIN_URL = '/manage/login/'
+LOGIN_URL = '/manage/login/'
 
 # Defines the URL where the user will be redirected after logging out.
 LOGOUT_REDIRECT_URL = 'index'
@@ -81,10 +81,10 @@ SECRET_KEY = get_secret('DJANGO_SECRET_KEY', 'DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG should be set to False in production to prevent sensitive data exposure in errors.
 DEBUG = os.environ.get('DEBUG_STATUS') == 'True'
-SSL_STATUS = os.environ.get('SSL_STATUS') == 'True'
 
 # Production settings
 #########################################################################################################
+# CORS, CSRF, and Session settings for Cross-Origin Resource Sharing.
 # CORS, CSRF, and Session settings for Cross-Origin Resource Sharing.
 if DEBUG:
     CORS_ALLOW_ALL_ORIGINS = True
@@ -99,17 +99,9 @@ else:
     CSRF_COOKIE_DOMAIN = BASE_URL.replace("https://", "").replace("http://", "")
     CSRF_TRUSTED_ORIGINS = [BASE_URL]
     STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
-if SSL_STATUS:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-
-# SECURE_SSL_REDIRECT = False # Always Set to False when using HAproxy
-# CORS_ALLOW_CREDENTIALS = True
-# USE_X_FORWARDED_HOST = True
-# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-# CSRF_FAILURE_VIEW = 'django.views.csrf.csrf_failure'
 
 # SECURITY WARNING: don't allow all hosts in production!
 # List of allowed host/domain names that the app can serve.
@@ -163,9 +155,9 @@ MIDDLEWARE = [
 ]
 
 # For Docker/containers, you might need:
-import socket
-hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
-INTERNAL_IPS = [ip[:-1] + '1' for ip in ips] + ['127.0.0.1']
+# import socket
+# hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+# INTERNAL_IPS = [ip[:-1] + '1' for ip in ips] + ['127.0.0.1']
 
 TEMPLATES = [
     {

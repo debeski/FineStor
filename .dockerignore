@@ -1,8 +1,10 @@
-# Ignore Python bytecode files
+# Ignore Python and OS bytecode files
 *.pyc
 *.pyo
 __pycache__/
 *.DS_Store
+desktop.ini
+autorun.ini
 
 # Ignore Docker-related files
 Dockerfile
@@ -18,8 +20,10 @@ docker-compose.dev.yml
 logs/
 media/
 staticfiles/
+backups/
 xpose/
 .VSCodeCounter/
+
 # Ignore celery-related files
 celerybeat-schedule
 celerybeat-schedule-shm
@@ -28,3 +32,6 @@ celerybeat-schedule-wal
 # Ignore nginX image files
 nginx.conf
 dockernginx
+
+# Ignore Sensetive Secrets
+.env
